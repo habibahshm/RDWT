@@ -1,3 +1,5 @@
+When building the test VR scene, build with link cable instead of airlink for the boundries function to work correctly 
+
 # The Redirected Walking Toolkit
 The Redirected Walking Toolkit is a unified development and deployment platform for enabling exploration of large virtual environments. The toolkit is presented as a Unity3D package that can seamlessly integrate with standard virtual reality configurations to enable redirected walking algorithms with minimal setup effort for developers. The toolkit’s flexible architecture offers an interface that is not only easy to extend, but also complimented with a suite of simulation tools for testing and analysis.
 
