@@ -19,7 +19,7 @@ MonoBehaviour:
     width: 1920
     height: 989
   m_ShowMode: 4
-  m_Title: Scene
+  m_Title: Inspector
   m_RootView: {fileID: 6}
   m_MinSize: {x: 875, y: 371}
   m_MaxSize: {x: 10000, y: 10000}
@@ -48,7 +48,7 @@ MonoBehaviour:
   m_MinSize: {x: 300, y: 200}
   m_MaxSize: {x: 24288, y: 16192}
   vertical: 0
-  controlID: 100
+  controlID: 103
 --- !u!114 &3
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -68,8 +68,8 @@ MonoBehaviour:
     y: 0
     width: 454
     height: 939
-  m_MinSize: {x: 276, y: 71}
-  m_MaxSize: {x: 4001, y: 4021}
+  m_MinSize: {x: 275, y: 50}
+  m_MaxSize: {x: 4000, y: 4000}
   m_ActualView: {fileID: 13}
   m_Panes:
   - {fileID: 13}
@@ -269,8 +269,8 @@ MonoBehaviour:
     y: 0
     width: 1103
     height: 556
-  m_MinSize: {x: 202, y: 221}
-  m_MaxSize: {x: 4002, y: 4021}
+  m_MinSize: {x: 200, y: 200}
+  m_MaxSize: {x: 4000, y: 4000}
   m_ActualView: {fileID: 15}
   m_Panes:
   - {fileID: 15}
@@ -318,22 +318,22 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/Prefabs
+    - Assets/RDW Toolkit/Materials
     m_Globs: []
     m_OriginalText: 
   m_ViewMode: 1
   m_StartGridSize: 64
   m_LastFolders:
-  - Assets/Prefabs
+  - Assets/RDW Toolkit/Materials
   m_LastFoldersGridSize: -1
   m_LastProjectPath: C:\Users\habib\Desktop\RDWT
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
-    scrollPos: {x: 0, y: 78}
-    m_SelectedIDs: 94680000
-    m_LastClickedID: 26772
-    m_ExpandedIDs: 00000000886700008a6700008c6700008e67000000ca9a3bffffff7f
+    scrollPos: {x: 0, y: 0}
+    m_SelectedIDs: be670000
+    m_LastClickedID: 26558
+    m_ExpandedIDs: 00000000a8670000aa670000ac670000ae670000c067000000ca9a3bffffff7f
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -361,7 +361,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 00000000886700008a6700008c6700008e670000
+    m_ExpandedIDs: 00000000a8670000aa670000ac670000ae670000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -388,7 +388,7 @@ MonoBehaviour:
   m_ListAreaState:
     m_SelectedInstanceIDs: 
     m_LastClickedInstanceID: 0
-    m_HadKeyboardFocusLastEvent: 0
+    m_HadKeyboardFocusLastEvent: 1
     m_ExpandedInstanceIDs: c6230000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -491,9 +491,9 @@ MonoBehaviour:
   m_SceneHierarchy:
     m_TreeViewState:
       scrollPos: {x: 0, y: 0}
-      m_SelectedIDs: 36870000
-      m_LastClickedID: 34614
-      m_ExpandedIDs: 4cb6ffff9eb6ffffa2bcffff9ad1ffffecd1fffff0d7ffffc2f6ffffe0f6ffff96f7ffff2efbffff94660000c2660000c28600001887000036870000
+      m_SelectedIDs: 
+      m_LastClickedID: 0
+      m_ExpandedIDs: 6c39ffffc239ffffe63fffffbe66ffff1067ffff386dfffff888ffff4e89ffff768fffff06b2ffff5ab2ffff66b8ffff74c0ffffb8d2ffff0ad3ffff12d9ffff10ecffff64ecffff6ef2ffff2efbffffb4680000fe6800000c690000a06b0000aa6b0000ac6b0000c06b0000386e00004c6e0000ba6e0000c86e0000f66e00003c7300004073000046730000487300006e730000ba75000078760000127b0000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -776,9 +776,9 @@ MonoBehaviour:
   m_PlayAudio: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: 4.315916, y: -7.722393, z: -9.270904}
+    m_Target: {x: 3.1729944, y: -9.839611, z: 1.7402407}
     speed: 2
-    m_Value: {x: 4.315916, y: -7.722393, z: -9.270904}
+    m_Value: {x: 3.1729944, y: -9.839611, z: 1.7402407}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -824,13 +824,13 @@ MonoBehaviour:
     m_GridAxis: 1
     m_gridOpacity: 0.5
   m_Rotation:
-    m_Target: {x: 0.075007245, y: 0.91900605, z: -0.3228229, w: 0.21353474}
+    m_Target: {x: 0.48679897, y: 0.47090086, z: -0.35605162, w: 0.6438221}
     speed: 2
-    m_Value: {x: 0.07500688, y: 0.9190016, z: -0.32282132, w: 0.2135337}
+    m_Value: {x: 0.48679885, y: 0.47090074, z: -0.35605153, w: 0.6438219}
   m_Size:
-    m_Target: 7.7810802
+    m_Target: 7.8353605
     speed: 2
-    m_Value: 7.7810802
+    m_Value: 7.8353605
   m_Ortho:
     m_Target: 0
     speed: 2
