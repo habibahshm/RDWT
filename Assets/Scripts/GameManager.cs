@@ -17,31 +17,8 @@ public class GameManager : MonoBehaviour
     bool UIactive = false;
     bool prev_state_touch = false;
 
-    public static bool LineIntersection(out Vector3 intersection, Vector3 linePoint1,
-    Vector3 lineVec1, Vector3 linePoint2, Vector3 lineVec2)
-    {
+    [HideInInspector] public Vector3 center;
 
-        Vector3 lineVec3 = linePoint2 - linePoint1;
-        Vector3 crossVec1and2 = Vector3.Cross(lineVec1, lineVec2);
-        Vector3 crossVec3and2 = Vector3.Cross(lineVec3, lineVec2);
-
-        float planarFactor = Vector3.Dot(lineVec3, crossVec1and2);
-
-        //is coplanar, and not parallel
-        if (Mathf.Abs(planarFactor) < 0.0001f
-                && crossVec1and2.sqrMagnitude > 0.0001f)
-        {
-            float s = Vector3.Dot(crossVec3and2, crossVec1and2)
-                    / crossVec1and2.sqrMagnitude;
-            intersection = linePoint1 + (lineVec1 * s);
-            return true;
-        }
-        else
-        {
-            intersection = Vector3.zero;
-            return false;
-        }
-    }
 
     void Start()
     {
@@ -58,6 +35,8 @@ public class GameManager : MonoBehaviour
             //Grab all the boundary points. Setting BoundaryType to OuterBoundary is necessary
             Vector3[] boundaryPoints = OVRManager.boundary.GetGeometry(OVRBoundary.BoundaryType.PlayArea);
             Vector3 boundrydim  = OVRManager.boundary.GetDimensions(OVRBoundary.BoundaryType.PlayArea);
+            
+
             debugUI.text = "dim: "+ boundrydim.ToString() + "\n";
 
             //Generate a bunch of tall thin cubes to mark the outline
@@ -72,7 +51,6 @@ public class GameManager : MonoBehaviour
             Vector3 p3 = boundaryPoints[2];
             Vector3 p4 = boundaryPoints[3];
 
-            Vector3 center;
             Vector3 p1Diff = p3 - p1;
             Vector3 p2Diff = p4 - p2;
             if (LineIntersection(out center, p1, p1Diff, p2, p2Diff))
@@ -96,6 +74,8 @@ public class GameManager : MonoBehaviour
         if (OVRInput.GetDown(OVRInput.RawButton.A))
         {
             SceneManager.LoadScene(0);
+            debugUI.text = "dim: resetting \n";
+            LateStart(1f);
         }
 
         bool secondary_t = OVRInput.Get(OVRInput.Touch.Two);
@@ -115,5 +95,31 @@ public class GameManager : MonoBehaviour
             posUI.text = "user pos: " + pos.ToString() + "\n";
         }
 
+    }
+
+    public static bool LineIntersection(out Vector3 intersection, Vector3 linePoint1,
+        Vector3 lineVec1, Vector3 linePoint2, Vector3 lineVec2)
+    {
+
+        Vector3 lineVec3 = linePoint2 - linePoint1;
+        Vector3 crossVec1and2 = Vector3.Cross(lineVec1, lineVec2);
+        Vector3 crossVec3and2 = Vector3.Cross(lineVec3, lineVec2);
+
+        float planarFactor = Vector3.Dot(lineVec3, crossVec1and2);
+
+        //is coplanar, and not parallel
+        if (Mathf.Abs(planarFactor) < 0.0001f
+                && crossVec1and2.sqrMagnitude > 0.0001f)
+        {
+            float s = Vector3.Dot(crossVec3and2, crossVec1and2)
+                    / crossVec1and2.sqrMagnitude;
+            intersection = linePoint1 + (lineVec1 * s);
+            return true;
+        }
+        else
+        {
+            intersection = Vector3.zero;
+            return false;
+        }
     }
 }
