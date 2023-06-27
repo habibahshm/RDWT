@@ -11,20 +11,23 @@ public class GameManager : MonoBehaviour
     [SerializeField] GameObject UI;
     [SerializeField] TextMeshProUGUI debugUI;
     [SerializeField] TextMeshProUGUI posUI;
+   
 
     OVRCameraRig overCameraRig;
     private Vector3 pos;
     bool UIactive = false;
     bool prev_state_touch = false;
 
-    [HideInInspector] public Vector3 center;
+    RDManager red_manager;
 
 
     void Start()
     {
         //Get the user's current position and rotation in world coordinates, OVRCameraRig transform must be reset to align with wirld coordinates
         overCameraRig = GameObject.Find("OVRCameraRig").GetComponent<OVRCameraRig>();
-        
+        red_manager = GameObject.Find("Redirection Manager").GetComponent<RDManager>();
+
+
         //need to wait a while to get the right measurments, if we get them immediatley the values are zero.
         StartCoroutine(LateStart(0.1f));
 
@@ -53,9 +56,10 @@ public class GameManager : MonoBehaviour
 
             Vector3 p1Diff = p3 - p1;
             Vector3 p2Diff = p4 - p2;
+            Vector3 center;
             if (LineIntersection(out center, p1, p1Diff, p2, p2Diff))
             {
-                Instantiate(wallMarker, center, Quaternion.identity);
+                red_manager.center = center;
             }
         }
     }
@@ -73,9 +77,9 @@ public class GameManager : MonoBehaviour
 
         if (OVRInput.GetDown(OVRInput.RawButton.A))
         {
-            SceneManager.LoadScene(0);
-            debugUI.text = "dim: resetting \n";
+            posUI.SetText("resetting");
             LateStart(1f);
+            SceneManager.LoadScene(0);
         }
 
         bool secondary_t = OVRInput.Get(OVRInput.Touch.Two);
@@ -89,13 +93,22 @@ public class GameManager : MonoBehaviour
             }
             prev_state_touch = secondary_t;
         }
-       
-        if (UIactive)
+
+        /*if (UIactive)
         {
             posUI.text = "user pos: " + pos.ToString() + "\n";
-        }
+        }*/
 
     }
+
+    private void LateUpdate()
+    {
+        if(red_manager.tmp_target!= null)
+        {
+            Instantiate(wallMarker, red_manager.tmp_target, Quaternion.identity);
+        }
+    }
+        
 
     public static bool LineIntersection(out Vector3 intersection, Vector3 linePoint1,
         Vector3 lineVec1, Vector3 linePoint2, Vector3 lineVec2)

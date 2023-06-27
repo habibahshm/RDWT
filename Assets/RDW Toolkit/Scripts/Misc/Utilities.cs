@@ -43,6 +43,11 @@ namespace Redirection
             return Mathf.Sign(Vector3.Cross(prevDir, currDir).y) * Vector3.Angle(prevDir, currDir);
         }
 
+        public static float GetSignOfAngle(Vector3 prevDir, Vector3 currDir)
+        {
+            return Mathf.Sign(Vector3.Cross(prevDir, currDir).y);
+        }
+
         public static Vector3 GetRelativePosition(Vector3 pos, Transform origin)
         {
             return Quaternion.Inverse(origin.rotation) * (pos - origin.position);
