@@ -45,9 +45,6 @@ public class RDManager : MonoBehaviour
     [HideInInspector]
     public Vector3 currDir; // cur forward direction of the user
 
-    [HideInInspector]
-    public Vector3 tmp_target; // the curr redirection target
-
     [SerializeField] GameObject userDir;
     [SerializeField] GameObject dirTocenter;
 
@@ -55,17 +52,16 @@ public class RDManager : MonoBehaviour
     private const float S2C_TEMP_TARGET_DISTANCE = 4;
    
     private bool no_tmptarget = true;
+    private Vector3 tmp_target;       // the curr redirection target
 
-    // Start is called before the first frame update
-    void Start()
-    {
-       
-    }
 
-    // Update is called once per frame
-    void LateUpdate()
+    void Update()
     {
-     
+        if (Time.timeScale == 0)
+        {
+            return;
+        }
+
         currPos = Utilities.FlattenedPos3D(headTransform.position);
         currDir = Utilities.FlattenedDir3D(headTransform.forward);
 
@@ -90,8 +86,7 @@ public class RDManager : MonoBehaviour
             float bearingToCenter = Vector3.Angle(currDir, userToCenter);
             float signedAngle = Utilities.GetSignedAngle(currDir, userToCenter);
 
-            debugUI.SetText("Angle to center: " + bearingToCenter);
-            debugUI.text += "Signed angle: " + signedAngle;
+            debugUI.SetText("Angle to center: " + bearingToCenter + "\n Signed angle: " + signedAngle);
 
             if(bearingToCenter >= S2C_BEARING_ANGLE_THRESHOLD_IN_DEGREE)
             {

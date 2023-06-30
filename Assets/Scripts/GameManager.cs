@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.VisualScripting.Antlr3.Runtime;
 using Unity.XR.Oculus;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.XR;
 
 public class GameManager : MonoBehaviour
 {
@@ -11,14 +13,15 @@ public class GameManager : MonoBehaviour
     [SerializeField] GameObject UI;
     [SerializeField] TextMeshProUGUI debugUI;
     [SerializeField] TextMeshProUGUI posUI;
-   
 
     OVRCameraRig overCameraRig;
-    private Vector3 pos;
+    Vector3 pos;
+    RDManager red_manager;
+    GameObject red_target;
     bool UIactive = false;
     bool prev_state_touch = false;
-
-    RDManager red_manager;
+    bool paused = false;
+    bool prev_state_pause = false;
 
 
     void Start()
@@ -29,7 +32,7 @@ public class GameManager : MonoBehaviour
 
 
         //need to wait a while to get the right measurments, if we get them immediatley the values are zero.
-        StartCoroutine(LateStart(0.1f));
+        StartCoroutine(Wait(0.1f));
 
         //Check if the boundary is configured
         bool configured = OVRManager.boundary.GetConfigured();
@@ -39,9 +42,6 @@ public class GameManager : MonoBehaviour
             Vector3[] boundaryPoints = OVRManager.boundary.GetGeometry(OVRBoundary.BoundaryType.PlayArea);
             Vector3 boundrydim  = OVRManager.boundary.GetDimensions(OVRBoundary.BoundaryType.PlayArea);
             
-
-            debugUI.text = "dim: "+ boundrydim.ToString() + "\n";
-
             //Generate a bunch of tall thin cubes to mark the outline
             foreach (Vector3 pos in boundaryPoints)
             {      
@@ -60,11 +60,12 @@ public class GameManager : MonoBehaviour
             if (LineIntersection(out center, p1, p1Diff, p2, p2Diff))
             {
                 red_manager.center = center;
+                red_target = Instantiate(wallMarker, center, Quaternion.identity);
             }
         }
     }
 
-    IEnumerator LateStart(float waitTime)
+    IEnumerator Wait(float waitTime)
     {
         yield return new WaitForSeconds(waitTime);
     }
@@ -72,18 +73,27 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        OVRInput.Update();
-        pos = overCameraRig.centerEyeAnchor.position;
-
-        if (OVRInput.GetDown(OVRInput.RawButton.A))
+        
+        if (OVRInput.GetDown(OVRInput.Button.One, OVRInput.Controller.RTouch))
         {
-            posUI.SetText("resetting");
-            LateStart(1f);
             SceneManager.LoadScene(0);
         }
 
+    
+        bool button_pressed = OVRInput.GetDown(OVRInput.Button.Two, OVRInput.Controller.RTouch);
+        if (button_pressed != prev_state_pause)
+        {
+            if (button_pressed)
+            {
+                
+                Time.timeScale = paused ? 1 : 0;
+                paused = !paused;
+                
+            }
+            prev_state_pause = button_pressed;
+        }
+
         bool secondary_t = OVRInput.Get(OVRInput.Touch.Two);
-        
         if (secondary_t != prev_state_touch)
         {
             if (secondary_t)
@@ -94,18 +104,20 @@ public class GameManager : MonoBehaviour
             prev_state_touch = secondary_t;
         }
 
-        /*if (UIactive)
-        {
-            posUI.text = "user pos: " + pos.ToString() + "\n";
-        }*/
 
     }
 
     private void LateUpdate()
     {
-        if(red_manager.tmp_target!= null)
+
+        if (Time.timeScale == 0)
         {
-            Instantiate(wallMarker, red_manager.tmp_target, Quaternion.identity);
+            return;
+        }
+
+        if (red_manager.redirection_target != null)
+        {
+            red_target.transform.position = red_manager.redirection_target;
         }
     }
         
