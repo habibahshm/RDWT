@@ -19,10 +19,30 @@ public class RDManager : MonoBehaviour
     [Range(1, 23)]
     public float CURVATURE_RADIUS = 7.5F;
 
+    [Tooltip("Baseline rotation applied")]
+    [Range(0, 1)]
+    public float BASELINE_ROT = 0.1F;
+
+    [Tooltip("Threshold Angle in degrees to apply rotational dampening if using the original is unckecked")]
+    [Range(0, 160)]
+    public int BEARING_THRESHOLD_FOR_DAMPENING = 45;  // TIMOFEY: 45.0f;
+
+    [Tooltip("Threshold distance within which dampening is applied")]
+    [Range(0, 5)]
+    public float DISTANCE_THRESHOLD_FOR_DAMPENING = 1.25F;  // TIMOFEY: 45.0f;
+
+    [Tooltip("Use Original dampening method as proposed by razzaque or use the new one by Hodgson")]
+    public bool original_dampening = true;
+
+    [Tooltip("Smoothing between rotations per frame")]
+    [Range(0, 1)]
+    public float SMOOTHING_FACTOR = 0.125f;
+
     [Tooltip("The game object that is being physically tracked (probably user's head)")]
     public Transform headTransform;
 
-  
+    public Transform XRTransform;
+
     public TextMeshProUGUI debugUI;
 
     [HideInInspector]
@@ -47,14 +67,14 @@ public class RDManager : MonoBehaviour
 
     private const float S2C_BEARING_ANGLE_THRESHOLD_IN_DEGREE = 160;
     private const float S2C_TEMP_TARGET_DISTANCE = 4;
-   
-    private bool no_tmptarget = true;
-    private Vector3 tmp_target;       // the curr redirection target
 
     private const float MOVEMENT_THRESHOLD = 0.2f; // meters per second
     private const float ROTATION_THRESHOLD = 1.5f; // degrees per second
     private const float CURVATURE_GAIN_CAP_DEGREES_PER_SECOND = 15;  // degrees per second
     private const float ROTATION_GAIN_CAP_DEGREES_PER_SECOND = 30;  // degrees per second
+
+    private bool no_tmptarget = true;
+    private Vector3 tmp_target;       // the curr redirection target
 
     // Auxiliary Parameters
     private float rotationFromCurvatureGain; //Proposed curvature gain based on user speed
@@ -91,10 +111,10 @@ public class RDManager : MonoBehaviour
 
         rotationFromCurvatureGain = 0;
 
-        if((deltaPos.magnitude/ Time.deltaTime) > MOVEMENT_THRESHOLD)
+        if ((deltaPos.magnitude / Time.deltaTime) > MOVEMENT_THRESHOLD)
         {
             rotationFromCurvatureGain = Mathf.Rad2Deg * (deltaPos.magnitude / CURVATURE_RADIUS);
-            rotationFromCurvatureGain = Mathf.Min(rotationFromCurvatureGain, CURVATURE_GAIN_CAP_DEGREES_PER_SECOND)* Time.deltaTime;
+            rotationFromCurvatureGain = Mathf.Min(rotationFromCurvatureGain, CURVATURE_GAIN_CAP_DEGREES_PER_SECOND) * Time.deltaTime;
         }
 
         //Compute desired facing vector for redirection
@@ -111,17 +131,52 @@ public class RDManager : MonoBehaviour
             if ((deltaDir * desiredSteeringDirection < 0 && ObjectToRotate == RotationObject.UserHead) || (deltaDir * desiredSteeringDirection > 0 && ObjectToRotate == RotationObject.Env))
             {
                 //Rotating against the user
-                rotationFromRotationGain = Mathf.Min(Mathf.Abs(deltaDir * MIN_ROT_GAIN), ROTATION_GAIN_CAP_DEGREES_PER_SECOND) * Time.deltaTime; 
+                rotationFromRotationGain = Mathf.Min(Mathf.Abs(deltaDir * MIN_ROT_GAIN), ROTATION_GAIN_CAP_DEGREES_PER_SECOND) * Time.deltaTime;
             }
             else
-            {  
+            {
                 //Rotating with the user
                 rotationFromRotationGain = Mathf.Min(Mathf.Abs(deltaDir * MAX_ROT_GAIN), ROTATION_GAIN_CAP_DEGREES_PER_SECOND) * Time.deltaTime;
             }
         }
 
-        
+        float rotationProposed = desiredSteeringDirection * Mathf.Max(rotationFromRotationGain, rotationFromCurvatureGain);
 
+        //if user is stationary, apply baseline rotation
+        if (Mathf.Approximately(rotationProposed, 0))
+        {
+            rotationProposed = desiredSteeringDirection * BASELINE_ROT * Time.deltaTime;
+        }
+
+        //DAMPENING METHODS
+        float bearingToTarget = Vector3.Angle(currDir, desiredFacingDirection);
+        if (original_dampening)
+        {
+            // Razzaque et al.
+            rotationProposed *= Mathf.Sin(Mathf.Deg2Rad * bearingToTarget);
+
+        }
+        else
+        {
+            // Hodgson et al.
+            if (bearingToTarget <= BEARING_THRESHOLD_FOR_DAMPENING)
+                rotationProposed *= Mathf.Sin(Mathf.Deg2Rad * 90 * bearingToTarget / BEARING_THRESHOLD_FOR_DAMPENING);
+        }
+
+
+        // MAHDI: Linearly scaling the rotation when the distance is near zero
+        if (desiredFacingDirection.magnitude <= DISTANCE_THRESHOLD_FOR_DAMPENING)
+        {
+            rotationProposed *= desiredFacingDirection.magnitude / DISTANCE_THRESHOLD_FOR_DAMPENING;
+        }
+
+        // Implement additional rotation with smoothing
+        float finalRotation = (1.0f - SMOOTHING_FACTOR) * lastRotationApplied + SMOOTHING_FACTOR * rotationProposed;
+        lastRotationApplied = finalRotation;
+
+
+        XRTransform.RotateAround(Utilities.FlattenedPos3D(headTransform.position), Vector3.up, finalRotation);
+        debugUI.SetText(XRTransform.localEulerAngles.ToString());
 
     }
 
@@ -134,7 +189,7 @@ public class RDManager : MonoBehaviour
             float bearingToCenter = Vector3.Angle(currDir, userToCenter);
             float signedAngle = Utilities.GetSignedAngle(currDir, userToCenter);
 
-            debugUI.SetText("Angle to center: " + bearingToCenter + "\n Signed angle: " + signedAngle);
+            //debugUI.SetText("Angle to center: " + bearingToCenter + "\n Signed angle: " + signedAngle);
 
             if(bearingToCenter >= S2C_BEARING_ANGLE_THRESHOLD_IN_DEGREE)
             {
