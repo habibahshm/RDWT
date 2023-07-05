@@ -53,6 +53,11 @@ namespace Redirection
             return Quaternion.Inverse(origin.rotation) * dir;
         }
 
+        public static Vector3 RotatePointAroundPivot(Vector3 point, Vector3 pivot, Vector3 angles)
+        {
+            return Quaternion.Euler(angles) * (point - pivot) + pivot;
+        }
+
         // Based on: http://stackoverflow.com/questions/4780119/2d-euclidean-vector-rotations
         // FORCED LEFT HAND ROTATION AND DEGREES
         public static Vector2 RotateVector(Vector2 fromOrientation, float thetaInDegrees)

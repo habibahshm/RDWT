@@ -9,25 +9,21 @@ using UnityEngine.XR;
 
 public class GameManager : MonoBehaviour
 {
-    [SerializeField] GameObject wallMarker;
     [SerializeField] GameObject UI;
-    [SerializeField] TextMeshProUGUI debugUI;
-    [SerializeField] TextMeshProUGUI posUI;
-
-    OVRCameraRig overCameraRig;
-    Vector3 pos;
+  
     RDManager red_manager;
+    bool configured;
     GameObject red_target;
+
     bool UIactive = false;
     bool prev_state_touch = false;
     bool paused = false;
     bool prev_state_pause = false;
 
+    [SerializeField] GameObject wallMarker;
 
     void Start()
     {
-        //Get the user's current position and rotation in world coordinates, OVRCameraRig transform must be reset to align with wirld coordinates
-        overCameraRig = GameObject.Find("OVRCameraRig").GetComponent<OVRCameraRig>();
         red_manager = GameObject.Find("Redirection Manager").GetComponent<RDManager>();
 
 
@@ -35,19 +31,19 @@ public class GameManager : MonoBehaviour
         StartCoroutine(Wait(0.1f));
 
         //Check if the boundary is configured
-        bool configured = OVRManager.boundary.GetConfigured();
+        configured = OVRManager.boundary.GetConfigured();
         if (configured)
         {
             //Grab all the boundary points. Setting BoundaryType to OuterBoundary is necessary
             Vector3[] boundaryPoints = OVRManager.boundary.GetGeometry(OVRBoundary.BoundaryType.PlayArea);
-            Vector3 boundrydim  = OVRManager.boundary.GetDimensions(OVRBoundary.BoundaryType.PlayArea);
-            
-            //Generate a bunch of tall thin cubes to mark the outline
-            foreach (Vector3 pos in boundaryPoints)
-            {      
-                //debugUI.text = debugUI.text + pos.ToString() + "\n";
-                Instantiate(wallMarker, pos, Quaternion.identity);
-            }
+            //Vector3 boundrydim  = OVRManager.boundary.GetDimensions(OVRBoundary.BoundaryType.PlayArea);
+
+            /* //Generate a bunch of tall thin cubes to mark the outline
+             foreach (Vector3 pos in boundaryPoints)
+             {      
+                 //debugUI.text = debugUI.text + pos.ToString() + "\n";
+                 Instantiate(wallMarker, pos, Quaternion.identity);
+             }*/
 
             Vector3 p1 = boundaryPoints[0];
             Vector3 p2 = boundaryPoints[1];
@@ -63,6 +59,7 @@ public class GameManager : MonoBehaviour
                 red_target = Instantiate(wallMarker, center, Quaternion.identity);
             }
         }
+
     }
 
     IEnumerator Wait(float waitTime)
@@ -120,10 +117,9 @@ public class GameManager : MonoBehaviour
             red_target.transform.position = red_manager.redirection_target;
         }
     }
-        
 
     public static bool LineIntersection(out Vector3 intersection, Vector3 linePoint1,
-        Vector3 lineVec1, Vector3 linePoint2, Vector3 lineVec2)
+ Vector3 lineVec1, Vector3 linePoint2, Vector3 lineVec2)
     {
 
         Vector3 lineVec3 = linePoint2 - linePoint1;
@@ -147,4 +143,5 @@ public class GameManager : MonoBehaviour
             return false;
         }
     }
+
 }

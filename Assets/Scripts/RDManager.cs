@@ -31,19 +31,17 @@ public class RDManager : MonoBehaviour
     [Range(0, 5)]
     public float DISTANCE_THRESHOLD_FOR_DAMPENING = 1.25F;  // TIMOFEY: 45.0f;
 
-    [Tooltip("Use Original dampening method as proposed by razzaque or use the new one by Hodgson")]
-    public bool original_dampening = true;
-
     [Tooltip("Smoothing between rotations per frame")]
     [Range(0, 1)]
     public float SMOOTHING_FACTOR = 0.125f;
+
+    [Tooltip("Use Original dampening method as proposed by razzaque or use the new one by Hodgson")]
+    public bool original_dampening = true;
 
     [Tooltip("The game object that is being physically tracked (probably user's head)")]
     public Transform headTransform;
 
     public Transform XRTransform;
-
-    public TextMeshProUGUI debugUI;
 
     [HideInInspector]
     public Vector3 redirection_target;
@@ -59,11 +57,11 @@ public class RDManager : MonoBehaviour
     [HideInInspector]
     public float deltaDir;
 
-    enum RotationObject { UserHead, Env };
-
     [SerializeField] GameObject userDirVector;
     [SerializeField] GameObject dirTocenterVector;
-    [SerializeField] RotationObject ObjectToRotate;
+    [SerializeField] TextMeshProUGUI debugUI;
+    [SerializeField] TextMeshProUGUI posUI;
+    
 
     private const float S2C_BEARING_ANGLE_THRESHOLD_IN_DEGREE = 160;
     private const float S2C_TEMP_TARGET_DISTANCE = 4;
@@ -120,7 +118,7 @@ public class RDManager : MonoBehaviour
         //Compute desired facing vector for redirection
         Vector3 desiredFacingDirection = Utilities.FlattenedPos3D(redirection_target) - currPos;
         int signOfAngle = (int)Mathf.Sign(Utilities.GetSignedAngle(currDir, desiredFacingDirection));
-        int desiredSteeringDirection = ObjectToRotate == RotationObject.UserHead ? (-1) * signOfAngle : signOfAngle;
+        int desiredSteeringDirection = (-1) * signOfAngle;
 
         //Compute proposed rotation gain
         rotationFromRotationGain = 0;
@@ -128,7 +126,7 @@ public class RDManager : MonoBehaviour
         if (Mathf.Abs(deltaDir) / Time.deltaTime >= ROTATION_THRESHOLD)
         {
             //Determine if we need to rotate with or against the user
-            if ((deltaDir * desiredSteeringDirection < 0 && ObjectToRotate == RotationObject.UserHead) || (deltaDir * desiredSteeringDirection > 0 && ObjectToRotate == RotationObject.Env))
+            if (deltaDir * desiredSteeringDirection < 0)
             {
                 //Rotating against the user
                 rotationFromRotationGain = Mathf.Min(Mathf.Abs(deltaDir * MIN_ROT_GAIN), ROTATION_GAIN_CAP_DEGREES_PER_SECOND) * Time.deltaTime;
@@ -145,7 +143,7 @@ public class RDManager : MonoBehaviour
         //if user is stationary, apply baseline rotation
         if (Mathf.Approximately(rotationProposed, 0))
         {
-            rotationProposed = desiredSteeringDirection * BASELINE_ROT * Time.deltaTime;
+            rotationProposed = desiredSteeringDirection * BASELINE_ROT * Time.deltaTime; 
         }
 
         //DAMPENING METHODS
@@ -176,8 +174,7 @@ public class RDManager : MonoBehaviour
 
 
         XRTransform.RotateAround(Utilities.FlattenedPos3D(headTransform.position), Vector3.up, finalRotation);
-        debugUI.SetText(XRTransform.localEulerAngles.ToString());
-
+        center = Utilities.RotatePointAroundPivot(center, headTransform.position, new Vector3(0, finalRotation, 0));
     }
 
     public void S2C_PickRedirectionTarget()
@@ -225,5 +222,11 @@ public class RDManager : MonoBehaviour
     {
         deltaPos = currPos - prevPos;
         deltaDir = Utilities.GetSignedAngle(prevDir, currDir);
+        posUI.SetText("Speed: " + (deltaPos.magnitude / Time.deltaTime));
     }
+
+
+
+
+
 }
