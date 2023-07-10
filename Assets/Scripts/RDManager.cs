@@ -25,11 +25,11 @@ public class RDManager : MonoBehaviour
 
     [Tooltip("Threshold Angle in degrees to apply rotational dampening if using the original is unckecked")]
     [Range(0, 160)]
-    public int BEARING_THRESHOLD_FOR_DAMPENING = 45;  // TIMOFEY: 45.0f;
+    public int AngleThreshDamp = 45;  // TIMOFEY: 45.0f;
 
     [Tooltip("Threshold distance within which dampening is applied")]
     [Range(0, 5)]
-    public float DISTANCE_THRESHOLD_FOR_DAMPENING = 1.25F;  // TIMOFEY: 45.0f;
+    public float DistThreshDamp = 1.25F;  // TIMOFEY: 45.0f;
 
     [Tooltip("Smoothing between rotations per frame")]
     [Range(0, 1)]
@@ -61,13 +61,14 @@ public class RDManager : MonoBehaviour
     [SerializeField] GameObject dirTocenterVector;
     [SerializeField] TextMeshProUGUI debugUI;
     [SerializeField] TextMeshProUGUI posUI;
-    
+    [SerializeField] TextMeshProUGUI angleUI;
+
 
     private const float S2C_BEARING_ANGLE_THRESHOLD_IN_DEGREE = 160;
     private const float S2C_TEMP_TARGET_DISTANCE = 4;
 
-    private const float MOVEMENT_THRESHOLD = 0.2f; // meters per second
-    private const float ROTATION_THRESHOLD = 1.5f; // degrees per second
+    private const float MOVEMENT_THRESHOLD = 0.1f; // meters per second
+    private const float ROTATION_THRESHOLD = 1f; // degrees per second
     private const float CURVATURE_GAIN_CAP_DEGREES_PER_SECOND = 15;  // degrees per second
     private const float ROTATION_GAIN_CAP_DEGREES_PER_SECOND = 30;  // degrees per second
 
@@ -79,6 +80,12 @@ public class RDManager : MonoBehaviour
     private float rotationFromRotationGain; //Proposed rotation gain based on head's yaw
     private float lastRotationApplied = 0f;
 
+    GameManager gameManager;
+
+    private void Start()
+    {
+        gameManager = GameObject.Find("Game Manager").GetComponent<GameManager>();
+    }
     void Update()
     {
         if (Time.timeScale == 0)
@@ -88,19 +95,19 @@ public class RDManager : MonoBehaviour
 
         UpdateCurrentUserState();
         CalculateDelta();
-
-        LineRenderer lineRenderer = dirTocenterVector.GetComponent<LineRenderer>();
-        lineRenderer.SetPosition(0, currPos);
-        lineRenderer.SetPosition(1, center);
-
-        LineRenderer lineRenderer2 = userDirVector.GetComponent<LineRenderer>();
-        lineRenderer2.SetPosition(0, currPos);
-        lineRenderer2.SetPosition(1, Utilities.FlattenedPos3D(headTransform.TransformPoint(Vector3.forward * 0.5f)));
-
         ApplyRedirection();
-
         UpdatePreviousUserState();
 
+        if (gameManager.debug)
+        {
+            LineRenderer lineRenderer = dirTocenterVector.GetComponent<LineRenderer>();
+            lineRenderer.SetPosition(0, currPos);
+            lineRenderer.SetPosition(1, center);
+
+            LineRenderer lineRenderer2 = userDirVector.GetComponent<LineRenderer>();
+            lineRenderer2.SetPosition(0, currPos);
+            lineRenderer2.SetPosition(1, Utilities.FlattenedPos3D(headTransform.TransformPoint(Vector3.forward * 0.5f)));
+        }
     }
 
     public void ApplyRedirection()
@@ -146,7 +153,7 @@ public class RDManager : MonoBehaviour
             rotationProposed = desiredSteeringDirection * BASELINE_ROT * Time.deltaTime; 
         }
 
-        //DAMPENING METHODS
+       /* //DAMPENING METHODS
         float bearingToTarget = Vector3.Angle(currDir, desiredFacingDirection);
         if (original_dampening)
         {
@@ -157,21 +164,22 @@ public class RDManager : MonoBehaviour
         else
         {
             // Hodgson et al.
-            if (bearingToTarget <= BEARING_THRESHOLD_FOR_DAMPENING)
-                rotationProposed *= Mathf.Sin(Mathf.Deg2Rad * 90 * bearingToTarget / BEARING_THRESHOLD_FOR_DAMPENING);
-        }
+            if (bearingToTarget <= AngleThreshDamp)
+                rotationProposed *= Mathf.Sin(Mathf.Deg2Rad * 90 * bearingToTarget / AngleThreshDamp);
+        }*/
 
 
         // MAHDI: Linearly scaling the rotation when the distance is near zero
-        if (desiredFacingDirection.magnitude <= DISTANCE_THRESHOLD_FOR_DAMPENING)
+        if (desiredFacingDirection.magnitude <= DistThreshDamp)
         {
-            rotationProposed *= desiredFacingDirection.magnitude / DISTANCE_THRESHOLD_FOR_DAMPENING;
+            rotationProposed *= desiredFacingDirection.magnitude / DistThreshDamp;
         }
 
         // Implement additional rotation with smoothing
         float finalRotation = (1.0f - SMOOTHING_FACTOR) * lastRotationApplied + SMOOTHING_FACTOR * rotationProposed;
         lastRotationApplied = finalRotation;
 
+        angleUI.SetText("Final Rotation: " + finalRotation);
 
         XRTransform.RotateAround(Utilities.FlattenedPos3D(headTransform.position), Vector3.up, finalRotation);
         center = Utilities.RotatePointAroundPivot(center, headTransform.position, new Vector3(0, finalRotation, 0));
@@ -186,7 +194,7 @@ public class RDManager : MonoBehaviour
             float bearingToCenter = Vector3.Angle(currDir, userToCenter);
             float signedAngle = Utilities.GetSignedAngle(currDir, userToCenter);
 
-            //debugUI.SetText("Angle to center: " + bearingToCenter + "\n Signed angle: " + signedAngle);
+            posUI.SetText("Angle to center: " + bearingToCenter + "\n Signed angle: " + signedAngle);
 
             if(bearingToCenter >= S2C_BEARING_ANGLE_THRESHOLD_IN_DEGREE)
             {
@@ -214,15 +222,18 @@ public class RDManager : MonoBehaviour
 
     void UpdatePreviousUserState()
     {
-        prevPos = Utilities.FlattenedPos3D(headTransform.position);
-        prevDir = Utilities.FlattenedDir3D(headTransform.forward);
+        /*prevPos = Utilities.FlattenedPos3D(headTransform.position);
+        prevDir = Utilities.FlattenedDir3D(headTransform.forward);*/
+
+        prevPos = currPos;
+        prevDir = currDir;
     }
 
     void CalculateDelta()
     {
         deltaPos = currPos - prevPos;
         deltaDir = Utilities.GetSignedAngle(prevDir, currDir);
-        posUI.SetText("Speed: " + (deltaPos.magnitude / Time.deltaTime));
+        //posUI.SetText("Speed: " + (deltaPos.magnitude / Time.deltaTime));
     }
 
 
