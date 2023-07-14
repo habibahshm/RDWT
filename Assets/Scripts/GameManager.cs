@@ -29,11 +29,12 @@ public class GameManager : MonoBehaviour
         red_manager = GameObject.Find("Redirection Manager").GetComponent<RDManager>();
         pathTrail = GameObject.Find("Redirection Manager").GetComponent<PathTrail>();
 
-        Boundary.SetBoundaryVisible(true);
         //Check if the boundary is configured
         configured = OVRManager.boundary.GetConfigured();
         if (configured)
         {
+
+            Boundary.SetBoundaryVisible(true);
             //Grab all the boundary points. Setting BoundaryType to OuterBoundary is necessary
             Vector3[] boundaryPoints = OVRManager.boundary.GetGeometry(OVRBoundary.BoundaryType.PlayArea);
             Vector3 boundrydim  = OVRManager.boundary.GetDimensions(OVRBoundary.BoundaryType.PlayArea);
@@ -57,12 +58,6 @@ public class GameManager : MonoBehaviour
         }
 
     }
-
-    IEnumerator Wait(float waitTime)
-    {
-        yield return new WaitForSeconds(waitTime);
-    }
-
 
     void Update()
     {
