@@ -14,6 +14,7 @@ public class GameManager : MonoBehaviour
     RDManager red_manager;
     bool configured;
     GameObject red_target;
+    PathTrail pathTrail;
 
     [HideInInspector] public bool debug = false;
     bool prev_state_touch = false;
@@ -21,21 +22,14 @@ public class GameManager : MonoBehaviour
     bool prev_state_pause = false;
 
     [SerializeField] GameObject wallMarker;
-    [SerializeField] TextMeshProUGUI debugUI;
+    [SerializeField] TextMeshProUGUI text1;
 
     void Start()
     {
         red_manager = GameObject.Find("Redirection Manager").GetComponent<RDManager>();
+        pathTrail = GameObject.Find("Redirection Manager").GetComponent<PathTrail>();
 
-        Material pathMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-        if(pathMaterial == null)
-        {
-            debugUI.SetText("error in shader");
-        }
-
-        //need to wait a while to get the right measurments, if we get them immediatley the values are zero.
-        StartCoroutine(Wait(0.1f));
-
+        Boundary.SetBoundaryVisible(true);
         //Check if the boundary is configured
         configured = OVRManager.boundary.GetConfigured();
         if (configured)
@@ -43,13 +37,9 @@ public class GameManager : MonoBehaviour
             //Grab all the boundary points. Setting BoundaryType to OuterBoundary is necessary
             Vector3[] boundaryPoints = OVRManager.boundary.GetGeometry(OVRBoundary.BoundaryType.PlayArea);
             Vector3 boundrydim  = OVRManager.boundary.GetDimensions(OVRBoundary.BoundaryType.PlayArea);
-            debugUI.SetText("dim: " + boundrydim);
-            /* //Generate a bunch of tall thin cubes to mark the outline
-             foreach (Vector3 pos in boundaryPoints)
-             {      
-                 //debugUI.text = debugUI.text + pos.ToString() + "\n";
-                 Instantiate(wallMarker, pos, Quaternion.identity);
-             }*/
+
+           
+            //text1.SetText("dim: " + boundrydim);
 
             Vector3 p1 = boundaryPoints[0];
             Vector3 p2 = boundaryPoints[1];
@@ -104,6 +94,11 @@ public class GameManager : MonoBehaviour
                 debug = !debug;
                 UI.SetActive(debug);
                 red_target.SetActive(debug);
+                if (debug)
+                    pathTrail.BeginTrailDrawing();
+                else
+                    pathTrail.ClearTrail("Real Trail");
+                
             }
             prev_state_touch = secondary_t;
         }

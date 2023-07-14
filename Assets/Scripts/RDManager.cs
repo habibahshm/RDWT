@@ -59,9 +59,9 @@ public class RDManager : MonoBehaviour
 
     [SerializeField] GameObject userDirVector;
     [SerializeField] GameObject dirTocenterVector;
-    [SerializeField] TextMeshProUGUI debugUI;
-    [SerializeField] TextMeshProUGUI posUI;
-    [SerializeField] TextMeshProUGUI angleUI;
+    [SerializeField] TextMeshProUGUI text1;
+    [SerializeField] TextMeshProUGUI text2;
+    [SerializeField] TextMeshProUGUI text3;
 
 
     private const float S2C_BEARING_ANGLE_THRESHOLD_IN_DEGREE = 160;
@@ -153,8 +153,8 @@ public class RDManager : MonoBehaviour
             rotationProposed = desiredSteeringDirection * BASELINE_ROT * Time.deltaTime; 
         }
 
-       /* //DAMPENING METHODS
-        float bearingToTarget = Vector3.Angle(currDir, desiredFacingDirection);
+        //DAMPENING METHODS
+      /*  float bearingToTarget = Vector3.Angle(currDir, desiredFacingDirection);
         if (original_dampening)
         {
             // Razzaque et al.
@@ -179,7 +179,7 @@ public class RDManager : MonoBehaviour
         float finalRotation = (1.0f - SMOOTHING_FACTOR) * lastRotationApplied + SMOOTHING_FACTOR * rotationProposed;
         lastRotationApplied = finalRotation;
 
-        angleUI.SetText("Final Rotation: " + finalRotation);
+        text3.SetText("Final Rotation: " + finalRotation);
 
         XRTransform.RotateAround(Utilities.FlattenedPos3D(headTransform.position), Vector3.up, finalRotation);
         center = Utilities.RotatePointAroundPivot(center, headTransform.position, new Vector3(0, finalRotation, 0));
@@ -194,7 +194,7 @@ public class RDManager : MonoBehaviour
             float bearingToCenter = Vector3.Angle(currDir, userToCenter);
             float signedAngle = Utilities.GetSignedAngle(currDir, userToCenter);
 
-            posUI.SetText("Angle to center: " + bearingToCenter + "\n Signed angle: " + signedAngle);
+            //text2.SetText("Angle to center: " + bearingToCenter + "\n Signed angle: " + signedAngle);
 
             if(bearingToCenter >= S2C_BEARING_ANGLE_THRESHOLD_IN_DEGREE)
             {
@@ -222,18 +222,16 @@ public class RDManager : MonoBehaviour
 
     void UpdatePreviousUserState()
     {
-        /*prevPos = Utilities.FlattenedPos3D(headTransform.position);
-        prevDir = Utilities.FlattenedDir3D(headTransform.forward);*/
-
-        prevPos = currPos;
-        prevDir = currDir;
+        prevPos = Utilities.FlattenedPos3D(headTransform.position);
+        prevDir = Utilities.FlattenedDir3D(headTransform.forward);    
     }
 
     void CalculateDelta()
     {
         deltaPos = currPos - prevPos;
         deltaDir = Utilities.GetSignedAngle(prevDir, currDir);
-        //posUI.SetText("Speed: " + (deltaPos.magnitude / Time.deltaTime));
+        text1.SetText("delta pos: " + deltaPos);
+        text2.SetText("Speed: " + (deltaPos.magnitude / Time.deltaTime));
     }
 
 
