@@ -67,8 +67,8 @@ public class RDManager : MonoBehaviour
     private const float S2C_BEARING_ANGLE_THRESHOLD_IN_DEGREE = 160;
     private const float S2C_TEMP_TARGET_DISTANCE = 4;
 
-    private const float MOVEMENT_THRESHOLD = 0.1f; // meters per second
-    private const float ROTATION_THRESHOLD = 1f; // degrees per second
+    private const float MOVEMENT_THRESHOLD = 0.2f; // meters per second
+    private const float ROTATION_THRESHOLD = 1.5f; // degrees per second
     private const float CURVATURE_GAIN_CAP_DEGREES_PER_SECOND = 15;  // degrees per second
     private const float ROTATION_GAIN_CAP_DEGREES_PER_SECOND = 30;  // degrees per second
 
@@ -92,9 +92,6 @@ public class RDManager : MonoBehaviour
         sumOfInjectedRotationFromCurvatureGain = 0;
         sumOfRealDistanceTravelled = 0;
         sumOfInjectedRotationFromRotationGain = 0;
-        text1.text = "";
-        text2.text = "";
-        text3.text = "";
     }
 
     void Update()
@@ -208,7 +205,8 @@ public class RDManager : MonoBehaviour
             sumOfInjectedRotationFromRotationGain += Mathf.Abs(finalRotation);
         }
 
-        text3.SetText("Injected rot so far: " + sumOfInjectedRotationFromRotationGain);
+        //text3.SetText("Injected rot so far: " + sumOfInjectedRotationFromRotationGain);
+        text3.SetText("final rotation: " + finalRotation);
 
         XRTransform.RotateAround(Utilities.FlattenedPos3D(headTransform.position), Vector3.up, finalRotation);
         center = Utilities.RotatePointAroundPivot(center, headTransform.position, new Vector3(0, finalRotation, 0));
