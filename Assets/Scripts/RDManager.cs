@@ -83,12 +83,18 @@ public class RDManager : MonoBehaviour
     GameManager gameManager;
     float sumOfInjectedRotationFromCurvatureGain;
     float sumOfRealDistanceTravelled;
+    float sumOfRealRot;
+    float sumOfInjectedRotationFromRotationGain;
 
     private void Start()
     {
         gameManager = GameObject.Find("Game Manager").GetComponent<GameManager>();
         sumOfInjectedRotationFromCurvatureGain = 0;
         sumOfRealDistanceTravelled = 0;
+        sumOfInjectedRotationFromRotationGain = 0;
+        text1.text = "";
+        text2.text = "";
+        text3.text = "";
     }
 
     void Update()
@@ -121,12 +127,12 @@ public class RDManager : MonoBehaviour
 
         rotationFromCurvatureGain = 0;
 
-        float distMag = Mathf.Round(deltaPos.magnitude * 100f) / 100f;
+        //float distMag = Mathf.Round(deltaPos.magnitude * 1000f) / 1000f;
 
-        if ((distMag / Time.deltaTime) > MOVEMENT_THRESHOLD)
+        if ((deltaPos.magnitude / Time.deltaTime) > MOVEMENT_THRESHOLD)
         {
-            rotationFromCurvatureGain = Mathf.Rad2Deg * (distMag / CURVATURE_RADIUS);
-            rotationFromCurvatureGain = Mathf.Min(rotationFromCurvatureGain, CURVATURE_GAIN_CAP_DEGREES_PER_SECOND) * Time.deltaTime;
+            rotationFromCurvatureGain = Mathf.Rad2Deg * (deltaPos.magnitude / CURVATURE_RADIUS);
+            rotationFromCurvatureGain = Mathf.Min(rotationFromCurvatureGain, CURVATURE_GAIN_CAP_DEGREES_PER_SECOND * Time.deltaTime);
         }
 
         //Compute desired facing vector for redirection
@@ -143,57 +149,66 @@ public class RDManager : MonoBehaviour
             if (deltaDir * desiredSteeringDirection < 0)
             {
                 //Rotating against the user
-                rotationFromRotationGain = Mathf.Min(Mathf.Abs(deltaDir * MIN_ROT_GAIN), ROTATION_GAIN_CAP_DEGREES_PER_SECOND) * Time.deltaTime;
+                text1.SetText("against");
+                rotationFromRotationGain = Mathf.Min(Mathf.Abs(deltaDir * MIN_ROT_GAIN), ROTATION_GAIN_CAP_DEGREES_PER_SECOND * Time.deltaTime);
             }
             else
             {
                 //Rotating with the user
-                rotationFromRotationGain = Mathf.Min(Mathf.Abs(deltaDir * MAX_ROT_GAIN), ROTATION_GAIN_CAP_DEGREES_PER_SECOND) * Time.deltaTime;
+                text1.SetText("with");
+                rotationFromRotationGain = Mathf.Min(Mathf.Abs(deltaDir * MAX_ROT_GAIN), ROTATION_GAIN_CAP_DEGREES_PER_SECOND * Time.deltaTime);
             }
         }
 
         float rotationProposed = desiredSteeringDirection * Mathf.Max(rotationFromRotationGain, rotationFromCurvatureGain);
         bool curvatureGainUsed = rotationFromCurvatureGain > rotationFromRotationGain;
+        bool rotationGainUsed = rotationFromCurvatureGain < rotationFromRotationGain;
 
         //if user is stationary, apply baseline rotation
         if (Mathf.Approximately(rotationProposed, 0))
         {
             rotationProposed = desiredSteeringDirection * BASELINE_ROT * Time.deltaTime;
             curvatureGainUsed = false;
+            rotationGainUsed = false;
         }
 
-        if (curvatureGainUsed)
-        {
-            sumOfInjectedRotationFromCurvatureGain += Mathf.Abs(rotationProposed);
-        }
 
-        text3.SetText("Injected rot so far: " + sumOfInjectedRotationFromCurvatureGain);
 
         //DAMPENING METHODS
-        /*  float bearingToTarget = Vector3.Angle(currDir, desiredFacingDirection);
-          if (original_dampening)
-          {
-              // Razzaque et al.
-              rotationProposed *= Mathf.Sin(Mathf.Deg2Rad * bearingToTarget);
+        float bearingToTarget = Vector3.Angle(currDir, desiredFacingDirection);
+        if (original_dampening)
+        {
+            // Razzaque et al.
+            rotationProposed *= Mathf.Sin(Mathf.Deg2Rad * bearingToTarget);
 
-          }
-          else
-          {
-              // Hodgson et al.
-              if (bearingToTarget <= AngleThreshDamp)
-                  rotationProposed *= Mathf.Sin(Mathf.Deg2Rad * 90 * bearingToTarget / AngleThreshDamp);
-          }*/
+        }
+        else
+        {
+            // Hodgson et al.
+            if (bearingToTarget <= AngleThreshDamp)
+                rotationProposed *= Mathf.Sin(Mathf.Deg2Rad * 90 * bearingToTarget / AngleThreshDamp);
+        }
 
 
         // MAHDI: Linearly scaling the rotation when the distance is near zero
-        /*  if (desiredFacingDirection.magnitude <= DistThreshDamp)
-          {
-              rotationProposed *= desiredFacingDirection.magnitude / DistThreshDamp;
-          }*/
+        if (desiredFacingDirection.magnitude <= DistThreshDamp)
+        {
+            rotationProposed *= desiredFacingDirection.magnitude / DistThreshDamp;
+        }
 
         // Implement additional rotation with smoothing
         float finalRotation = (1.0f - SMOOTHING_FACTOR) * lastRotationApplied + SMOOTHING_FACTOR * rotationProposed;
         lastRotationApplied = finalRotation;
+
+        if (curvatureGainUsed)
+        {
+            sumOfInjectedRotationFromCurvatureGain += Mathf.Abs(finalRotation);
+        }else if (rotationGainUsed)
+        {
+            sumOfInjectedRotationFromRotationGain += Mathf.Abs(finalRotation);
+        }
+
+        text3.SetText("Injected rot so far: " + sumOfInjectedRotationFromRotationGain);
 
         XRTransform.RotateAround(Utilities.FlattenedPos3D(headTransform.position), Vector3.up, finalRotation);
         center = Utilities.RotatePointAroundPivot(center, headTransform.position, new Vector3(0, finalRotation, 0));
@@ -244,10 +259,13 @@ public class RDManager : MonoBehaviour
     {
         deltaPos = currPos - prevPos;
         deltaDir = Utilities.GetSignedAngle(prevDir, currDir);
+        float dirMag  = Mathf.Round(deltaDir * 100f) / 100f;
         float distMag = Mathf.Round(deltaPos.magnitude * 100f) / 100f;
         sumOfRealDistanceTravelled += distMag;
-        text1.SetText("delta pos: " + distMag);
-        text2.SetText("dist do far: " + sumOfRealDistanceTravelled);
+        sumOfRealRot += dirMag;
+        text2.SetText("delta dir: " + deltaDir + "\n Real rot so far: " + sumOfRealRot);
+        //text1.SetText("delta pos: " + distMag);
+        //text2.SetText("dist do far: " + sumOfRealDistanceTravelled);
         //text2.SetText("Speed: " + (deltaPos.magnitude / Time.deltaTime));
     }
 

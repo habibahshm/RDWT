@@ -88,12 +88,7 @@ public class GameManager : MonoBehaviour
             {
                 debug = !debug;
                 UI.SetActive(debug);
-                red_target.SetActive(debug);
-                if (debug)
-                    pathTrail.BeginTrailDrawing();
-                else
-                    pathTrail.ClearTrail("Real Trail");
-                
+                red_target.SetActive(debug);   
             }
             prev_state_touch = secondary_t;
         }
