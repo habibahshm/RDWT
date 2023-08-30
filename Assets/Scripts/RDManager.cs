@@ -43,6 +43,8 @@ public class RDManager : MonoBehaviour
 
     public Transform XRTransform;
 
+    public Transform startPos;
+
     [HideInInspector]
     public Vector3 redirection_target;
 
@@ -57,8 +59,8 @@ public class RDManager : MonoBehaviour
     [HideInInspector]
     public float deltaDir;
 
-    [SerializeField] GameObject userDirVector;
-    [SerializeField] GameObject dirTocenterVector;
+    /*[SerializeField] GameObject userDirVector;
+    [SerializeField] GameObject dirTocenterVector;*/
     [SerializeField] TextMeshProUGUI text1;
     [SerializeField] TextMeshProUGUI text2;
     [SerializeField] TextMeshProUGUI text3;
@@ -86,6 +88,7 @@ public class RDManager : MonoBehaviour
     float sumOfRealRot;
     float sumOfInjectedRotationFromRotationGain;
 
+    
     private void Start()
     {
         gameManager = GameObject.Find("Game Manager").GetComponent<GameManager>();
@@ -106,7 +109,7 @@ public class RDManager : MonoBehaviour
         ApplyRedirection();
         UpdatePreviousUserState();
 
-        if (gameManager.debug)
+        /*if (gameManager.debug)
         {
             LineRenderer lineRenderer = dirTocenterVector.GetComponent<LineRenderer>();
             lineRenderer.SetPosition(0, currPos);
@@ -115,7 +118,7 @@ public class RDManager : MonoBehaviour
             LineRenderer lineRenderer2 = userDirVector.GetComponent<LineRenderer>();
             lineRenderer2.SetPosition(0, currPos);
             lineRenderer2.SetPosition(1, Utilities.FlattenedPos3D(headTransform.TransformPoint(Vector3.forward * 0.5f)));
-        }
+        }*/
     }
 
     public void ApplyRedirection()
@@ -146,13 +149,13 @@ public class RDManager : MonoBehaviour
             if (deltaDir * desiredSteeringDirection < 0)
             {
                 //Rotating against the user
-                text1.SetText("against");
+                //text1.SetText("against");
                 rotationFromRotationGain = Mathf.Min(Mathf.Abs(deltaDir * MIN_ROT_GAIN), ROTATION_GAIN_CAP_DEGREES_PER_SECOND * Time.deltaTime);
             }
             else
             {
                 //Rotating with the user
-                text1.SetText("with");
+                //text1.SetText("with");
                 rotationFromRotationGain = Mathf.Min(Mathf.Abs(deltaDir * MAX_ROT_GAIN), ROTATION_GAIN_CAP_DEGREES_PER_SECOND * Time.deltaTime);
             }
         }
@@ -206,10 +209,10 @@ public class RDManager : MonoBehaviour
         }
 
         //text3.SetText("Injected rot so far: " + sumOfInjectedRotationFromRotationGain);
-        text3.SetText("final rotation: " + finalRotation);
 
         XRTransform.RotateAround(Utilities.FlattenedPos3D(headTransform.position), Vector3.up, finalRotation);
-        center = Utilities.RotatePointAroundPivot(center, headTransform.position, new Vector3(0, finalRotation, 0));
+        Vector3 rotPivot = headTransform.position - XRTransform.position; // must do if OVRRig is not aligned with the world origin
+        center = Utilities.RotatePointAroundPivot(center - XRTransform.position, rotPivot, new Vector3(0, finalRotation, 0)) + XRTransform.position;
     }
 
     public void S2C_PickRedirectionTarget()
@@ -261,7 +264,7 @@ public class RDManager : MonoBehaviour
         float distMag = Mathf.Round(deltaPos.magnitude * 100f) / 100f;
         sumOfRealDistanceTravelled += distMag;
         sumOfRealRot += dirMag;
-        text2.SetText("delta dir: " + deltaDir + "\n Real rot so far: " + sumOfRealRot);
+        //text2.SetText("delta dir: " + deltaDir + "\n Real rot so far: " + sumOfRealRot);
         //text1.SetText("delta pos: " + distMag);
         //text2.SetText("dist do far: " + sumOfRealDistanceTravelled);
         //text2.SetText("Speed: " + (deltaPos.magnitude / Time.deltaTime));

@@ -15,6 +15,7 @@ public class GameManager : MonoBehaviour
     bool configured;
     GameObject red_target;
     PathTrail pathTrail;
+    GameObject XROrigin;
 
     [HideInInspector] public bool debug = false;
     bool prev_state_touch = false;
@@ -22,7 +23,11 @@ public class GameManager : MonoBehaviour
     bool prev_state_pause = false;
 
     [SerializeField] GameObject wallMarker;
+    [SerializeField] GameObject realPlane;
+    [SerializeField] GameObject dirMarker;
     [SerializeField] TextMeshProUGUI text1;
+    [SerializeField] TextMeshProUGUI text2;
+    [SerializeField] TextMeshProUGUI text3;
 
     void Start()
     {
@@ -33,28 +38,7 @@ public class GameManager : MonoBehaviour
         configured = OVRManager.boundary.GetConfigured();
         if (configured)
         {
-
-            Boundary.SetBoundaryVisible(true);
-            //Grab all the boundary points. Setting BoundaryType to OuterBoundary is necessary
-            Vector3[] boundaryPoints = OVRManager.boundary.GetGeometry(OVRBoundary.BoundaryType.PlayArea);
-            Vector3 boundrydim  = OVRManager.boundary.GetDimensions(OVRBoundary.BoundaryType.PlayArea);
-
-           
-            //text1.SetText("dim: " + boundrydim);
-
-            Vector3 p1 = boundaryPoints[0];
-            Vector3 p2 = boundaryPoints[1];
-            Vector3 p3 = boundaryPoints[2];
-            Vector3 p4 = boundaryPoints[3];
-
-            Vector3 p1Diff = p3 - p1;
-            Vector3 p2Diff = p4 - p2;
-            Vector3 center;
-            if (LineIntersection(out center, p1, p1Diff, p2, p2Diff))
-            {
-                red_manager.center = center;
-                red_target = Instantiate(wallMarker, center, Quaternion.identity);
-            }
+            ResetPos();
         }
 
     }
@@ -64,7 +48,8 @@ public class GameManager : MonoBehaviour
         
         if (OVRInput.GetDown(OVRInput.Button.One, OVRInput.Controller.RTouch))
         {
-            SceneManager.LoadScene(0);
+            ResetPos();
+            
         }
 
     
@@ -98,7 +83,6 @@ public class GameManager : MonoBehaviour
 
     private void LateUpdate()
     {
-
         if (Time.timeScale == 0)
         {
             return;
@@ -108,8 +92,42 @@ public class GameManager : MonoBehaviour
         {
             red_target.transform.position = red_manager.redirection_target;
         }
-
       
+    }
+
+    public void ResetPos()
+    {
+        float angleY = red_manager.startPos.rotation.eulerAngles.y - red_manager.headTransform.rotation.eulerAngles.y;
+        red_manager.XRTransform.Rotate(0, angleY, 0);
+        Vector3 distDiff = red_manager.startPos.position - red_manager.headTransform.position;
+        red_manager.XRTransform.transform.position += new Vector3(distDiff.x, 0, distDiff.z);
+
+        //Grab all the boundary points. Setting BoundaryType to OuterBoundary is necessary
+        Vector3[] boundaryPoints = OVRManager.boundary.GetGeometry(OVRBoundary.BoundaryType.PlayArea);
+        Vector3 boundrydim = OVRManager.boundary.GetDimensions(OVRBoundary.BoundaryType.PlayArea);
+
+        //text1.SetText("dim: " + boundrydim);
+
+        Vector3 p1 = boundaryPoints[0];
+        Vector3 p2 = boundaryPoints[1];
+        Vector3 p3 = boundaryPoints[2];
+        Vector3 p4 = boundaryPoints[3];
+
+        Vector3 p1Diff = p3 - p1;
+        Vector3 p2Diff = p4 - p2;
+        Vector3 center;
+        if (LineIntersection(out center, p1, p1Diff, p2, p2Diff))
+        {
+            center += red_manager.XRTransform.position; // if OVRRig not aligned with world origin, then must shift by the diffrence.
+            red_manager.center = center;
+            if(red_target == null)
+                red_target = Instantiate(wallMarker, center, Quaternion.identity);
+            realPlane.transform.position = center + new Vector3(0, 0.05f, 0);
+        }
+
+        if(XROrigin == null)
+            XROrigin = Instantiate(dirMarker, red_manager.XRTransform.position + new Vector3(0, 0.1f, 0), red_manager.XRTransform.rotation);
+        text1.SetText("XROrigin: " + XROrigin.transform.position.ToString());
     }
 
     public static bool LineIntersection(out Vector3 intersection, Vector3 linePoint1,
