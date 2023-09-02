@@ -49,7 +49,7 @@ public class RDManager : MonoBehaviour
     public Vector3 redirection_target;
 
     [HideInInspector] 
-    public Vector3 center; // center of the tracking area
+    public GameObject center; // center of the tracking area
 
     [HideInInspector]
     public Vector3 currPos, prevPos, currDir, prevDir; //cur pos of user w.r.t the OVR rig which is aligned with the (0,0,0)
@@ -59,8 +59,8 @@ public class RDManager : MonoBehaviour
     [HideInInspector]
     public float deltaDir;
 
-    /*[SerializeField] GameObject userDirVector;
-    [SerializeField] GameObject dirTocenterVector;*/
+    [SerializeField] GameObject userDirVector;
+    [SerializeField] GameObject dirTocenterVector;
     [SerializeField] TextMeshProUGUI text1;
     [SerializeField] TextMeshProUGUI text2;
     [SerializeField] TextMeshProUGUI text3;
@@ -109,16 +109,16 @@ public class RDManager : MonoBehaviour
         ApplyRedirection();
         UpdatePreviousUserState();
 
-        /*if (gameManager.debug)
+        if (gameManager.debug)
         {
             LineRenderer lineRenderer = dirTocenterVector.GetComponent<LineRenderer>();
             lineRenderer.SetPosition(0, currPos);
-            lineRenderer.SetPosition(1, center);
+            lineRenderer.SetPosition(1, center.transform.position);
 
             LineRenderer lineRenderer2 = userDirVector.GetComponent<LineRenderer>();
             lineRenderer2.SetPosition(0, currPos);
             lineRenderer2.SetPosition(1, Utilities.FlattenedPos3D(headTransform.TransformPoint(Vector3.forward * 0.5f)));
-        }*/
+        }
     }
 
     public void ApplyRedirection()
@@ -211,16 +211,15 @@ public class RDManager : MonoBehaviour
         //text3.SetText("Injected rot so far: " + sumOfInjectedRotationFromRotationGain);
 
         XRTransform.RotateAround(Utilities.FlattenedPos3D(headTransform.position), Vector3.up, finalRotation);
-        Vector3 rotPivot = headTransform.position - XRTransform.position; // must do if OVRRig is not aligned with the world origin
-        center = Utilities.RotatePointAroundPivot(center - XRTransform.position, rotPivot, new Vector3(0, finalRotation, 0)) + XRTransform.position;
+        center.transform.RotateAround(Utilities.FlattenedPos3D(headTransform.position), Vector3.up, finalRotation);
     }
 
     public void S2C_PickRedirectionTarget()
     {
         if (center != null)
         {
-            center = Utilities.FlattenedPos3D(center);
-            Vector3 userToCenter = center - currPos;
+            Vector3 centerPos = Utilities.FlattenedPos3D(center.transform.position);
+            Vector3 userToCenter = centerPos - currPos;
             float bearingToCenter = Vector3.Angle(currDir, userToCenter);
             float signedAngle = Utilities.GetSignedAngle(currDir, userToCenter);
 
@@ -237,7 +236,7 @@ public class RDManager : MonoBehaviour
             }
             else
             {
-                redirection_target = center;
+                redirection_target = center.transform.position;
                 no_tmptarget = true;
             }
 

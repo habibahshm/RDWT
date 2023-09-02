@@ -15,16 +15,17 @@ public class GameManager : MonoBehaviour
     bool configured;
     GameObject red_target;
     PathTrail pathTrail;
-    GameObject XROrigin;
+    //GameObject XROrigin;
+    GameObject trackedArea;
 
     [HideInInspector] public bool debug = false;
     bool prev_state_touch = false;
     bool paused = false;
     bool prev_state_pause = false;
-
+    
     [SerializeField] GameObject wallMarker;
-    [SerializeField] GameObject realPlane;
     [SerializeField] GameObject dirMarker;
+    [SerializeField] GameObject realPlanePrefab;
     [SerializeField] TextMeshProUGUI text1;
     [SerializeField] TextMeshProUGUI text2;
     [SerializeField] TextMeshProUGUI text3;
@@ -92,7 +93,9 @@ public class GameManager : MonoBehaviour
         {
             red_target.transform.position = red_manager.redirection_target;
         }
-      
+        trackedArea.transform.position = red_manager.center.transform.position + new Vector3(0, 0.05f, 0);
+        trackedArea.transform.localRotation = red_manager.center.transform.rotation;
+
     }
 
     public void ResetPos()
@@ -119,15 +122,23 @@ public class GameManager : MonoBehaviour
         if (LineIntersection(out center, p1, p1Diff, p2, p2Diff))
         {
             center += red_manager.XRTransform.position; // if OVRRig not aligned with world origin, then must shift by the diffrence.
-            red_manager.center = center;
+            red_manager.center = new GameObject();
+            red_manager.center.transform.position = center;
+            red_manager.center.transform.localRotation = red_manager.startPos.transform.rotation;
             if(red_target == null)
                 red_target = Instantiate(wallMarker, center, Quaternion.identity);
-            realPlane.transform.position = center + new Vector3(0, 0.05f, 0);
+
+            if (trackedArea == null)
+            {
+                trackedArea = Instantiate(realPlanePrefab, center + new Vector3(0, 0.05f, 0), Quaternion.identity);
+                trackedArea.transform.localScale = new Vector3(boundrydim.x / 10, 1, boundrydim.z / 10);
+            }
+           
         }
 
-        if(XROrigin == null)
+       /* if(XROrigin == null)
             XROrigin = Instantiate(dirMarker, red_manager.XRTransform.position + new Vector3(0, 0.1f, 0), red_manager.XRTransform.rotation);
-        text1.SetText("XROrigin: " + XROrigin.transform.position.ToString());
+        text1.SetText("XROrigin: " + XROrigin.transform.position.ToString());*/
     }
 
     public static bool LineIntersection(out Vector3 intersection, Vector3 linePoint1,
