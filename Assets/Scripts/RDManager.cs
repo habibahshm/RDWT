@@ -83,6 +83,7 @@ public class RDManager : MonoBehaviour
     private float lastRotationApplied = 0f;
 
     GameManager gameManager;
+   
     float sumOfInjectedRotationFromCurvatureGain;
     float sumOfRealDistanceTravelled;
     float sumOfRealRot;
@@ -212,6 +213,7 @@ public class RDManager : MonoBehaviour
 
         XRTransform.RotateAround(Utilities.FlattenedPos3D(headTransform.position), Vector3.up, finalRotation);
         center.transform.RotateAround(Utilities.FlattenedPos3D(headTransform.position), Vector3.up, finalRotation);
+        //pathTrail.realTrail.RotateAround(Utilities.FlattenedPos3D(headTransform.position), Vector3.up, finalRotation);
     }
 
     public void S2C_PickRedirectionTarget()

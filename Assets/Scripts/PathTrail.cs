@@ -27,7 +27,8 @@ public class PathTrail : MonoBehaviour
 
     public const string REAL_TRAIL_NAME = "Real Trail", VIRTUAL_TRAIL_NAME = "Virtual Trail";
 
-    Transform trailParent = null, realTrail = null, virtualTrail = null;
+    [HideInInspector]
+    public Transform trailParent = null, realTrail = null, virtualTrail = null;
     Mesh realTrailMesh, virtualTrailMesh;
 
     RDManager redirectionManager;
@@ -96,7 +97,7 @@ public class PathTrail : MonoBehaviour
     void Initialize(string trailName, Color trailColor, List<Vector3> vertices, out Transform trail, out Mesh trailMesh)
     {
         vertices.Clear();
-        Material pathMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+        Material pathMaterial = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
         pathMaterial.color = trailColor;
         ClearTrail(trailName);
         trail = new GameObject(trailName).transform;

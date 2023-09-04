@@ -95,7 +95,7 @@ public class GameManager : MonoBehaviour
         }
         trackedArea.transform.position = red_manager.center.transform.position + new Vector3(0, 0.05f, 0);
         trackedArea.transform.localRotation = red_manager.center.transform.rotation;
-
+        pathTrail.realTrail.localRotation = red_manager.center.transform.rotation;
     }
 
     public void ResetPos()
@@ -133,12 +133,16 @@ public class GameManager : MonoBehaviour
                 trackedArea = Instantiate(realPlanePrefab, center + new Vector3(0, 0.05f, 0), Quaternion.identity);
                 trackedArea.transform.localScale = new Vector3(boundrydim.x / 10, 1, boundrydim.z / 10);
             }
-           
         }
 
-       /* if(XROrigin == null)
-            XROrigin = Instantiate(dirMarker, red_manager.XRTransform.position + new Vector3(0, 0.1f, 0), red_manager.XRTransform.rotation);
-        text1.SetText("XROrigin: " + XROrigin.transform.position.ToString());*/
+        pathTrail.ClearTrail(PathTrail.REAL_TRAIL_NAME);
+        pathTrail.ClearTrail(PathTrail.VIRTUAL_TRAIL_NAME);
+
+        pathTrail.BeginTrailDrawing();
+
+        /* if(XROrigin == null)
+             XROrigin = Instantiate(dirMarker, red_manager.XRTransform.position + new Vector3(0, 0.1f, 0), red_manager.XRTransform.rotation);
+         text1.SetText("XROrigin: " + XROrigin.transform.position.ToString());*/
     }
 
     public static bool LineIntersection(out Vector3 intersection, Vector3 linePoint1,
