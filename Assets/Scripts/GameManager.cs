@@ -15,7 +15,6 @@ public class GameManager : MonoBehaviour
     bool configured;
     GameObject red_target;
     PathTrail pathTrail;
-    //GameObject XROrigin;
     GameObject trackedArea;
 
     [HideInInspector] public bool debug = false;
@@ -42,9 +41,6 @@ public class GameManager : MonoBehaviour
             ResetPos();
         }
 
-        text1.SetText("XR rot: " + red_manager.XRTransform.rotation.eulerAngles.y);
-        text2.SetText("Center rot: " + red_manager.center.transform.rotation.eulerAngles.y);
-        text3.SetText("plane rot: " + trackedArea.transform.rotation.eulerAngles.y);
     }
 
     void Update()
@@ -98,7 +94,7 @@ public class GameManager : MonoBehaviour
         }
         trackedArea.transform.position = red_manager.center.transform.position + new Vector3(0, 0.05f, 0);
         trackedArea.transform.localRotation = red_manager.center.transform.rotation;
-        pathTrail.realTrail.localRotation = red_manager.center.transform.rotation;
+       
     }
 
     public void ResetPos()

@@ -82,8 +82,8 @@ public class RDManager : MonoBehaviour
     private float rotationFromRotationGain; //Proposed rotation gain based on head's yaw
     private float lastRotationApplied = 0f;
 
-    GameManager gameManager;
-   
+    PathTrail pathTrail;
+
     float sumOfInjectedRotationFromCurvatureGain;
     float sumOfRealDistanceTravelled;
     float sumOfRealRot;
@@ -92,7 +92,7 @@ public class RDManager : MonoBehaviour
     
     private void Start()
     {
-        gameManager = GameObject.Find("Game Manager").GetComponent<GameManager>();
+        pathTrail = GameObject.Find("Redirection Manager").GetComponent<PathTrail>();
         sumOfInjectedRotationFromCurvatureGain = 0;
         sumOfRealDistanceTravelled = 0;
         sumOfInjectedRotationFromRotationGain = 0;
@@ -110,7 +110,7 @@ public class RDManager : MonoBehaviour
         ApplyRedirection();
         UpdatePreviousUserState();
 
-        if (gameManager.debug)
+        /*if (gameManager.debug)
         {
             LineRenderer lineRenderer = dirTocenterVector.GetComponent<LineRenderer>();
             lineRenderer.SetPosition(0, currPos);
@@ -119,7 +119,7 @@ public class RDManager : MonoBehaviour
             LineRenderer lineRenderer2 = userDirVector.GetComponent<LineRenderer>();
             lineRenderer2.SetPosition(0, currPos);
             lineRenderer2.SetPosition(1, Utilities.FlattenedPos3D(headTransform.TransformPoint(Vector3.forward * 0.5f)));
-        }
+        }*/
     }
 
     public void ApplyRedirection()
@@ -213,7 +213,7 @@ public class RDManager : MonoBehaviour
 
         XRTransform.RotateAround(Utilities.FlattenedPos3D(headTransform.position), Vector3.up, finalRotation);
         center.transform.RotateAround(Utilities.FlattenedPos3D(headTransform.position), Vector3.up, finalRotation);
-        //pathTrail.realTrail.RotateAround(Utilities.FlattenedPos3D(headTransform.position), Vector3.up, finalRotation);
+        pathTrail.realTrail.RotateAround(Utilities.FlattenedPos3D(headTransform.position), Vector3.up, finalRotation);
     }
 
     public void S2C_PickRedirectionTarget()
