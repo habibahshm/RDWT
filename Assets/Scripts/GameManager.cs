@@ -42,6 +42,9 @@ public class GameManager : MonoBehaviour
             ResetPos();
         }
 
+        text1.SetText("XR rot: " + red_manager.XRTransform.rotation.eulerAngles.y);
+        text2.SetText("Center rot: " + red_manager.center.transform.rotation.eulerAngles.y);
+        text3.SetText("plane rot: " + trackedArea.transform.rotation.eulerAngles.y);
     }
 
     void Update()
@@ -109,8 +112,6 @@ public class GameManager : MonoBehaviour
         Vector3[] boundaryPoints = OVRManager.boundary.GetGeometry(OVRBoundary.BoundaryType.PlayArea);
         Vector3 boundrydim = OVRManager.boundary.GetDimensions(OVRBoundary.BoundaryType.PlayArea);
 
-        //text1.SetText("dim: " + boundrydim);
-
         Vector3 p1 = boundaryPoints[0];
         Vector3 p2 = boundaryPoints[1];
         Vector3 p3 = boundaryPoints[2];
@@ -118,14 +119,19 @@ public class GameManager : MonoBehaviour
 
         Vector3 p1Diff = p3 - p1;
         Vector3 p2Diff = p4 - p2;
-        Vector3 center;
+        Vector3 center; // Center of the tracked physical area
         if (LineIntersection(out center, p1, p1Diff, p2, p2Diff))
         {
-            center += red_manager.XRTransform.position; // if OVRRig not aligned with world origin, then must shift by the diffrence.
-            red_manager.center = new GameObject();
+            // if OVRRig/XR Origin is not aligned with world origin, then must shift and rotate by the diffrence.
+            center = Quaternion.Euler(0, red_manager.XRTransform.rotation.eulerAngles.y, 0) * center;
+            center += red_manager.XRTransform.position; 
+
+            if(red_manager.center == null)
+                red_manager.center = new GameObject();
             red_manager.center.transform.position = center;
-            red_manager.center.transform.localRotation = red_manager.startPos.transform.rotation;
-            if(red_target == null)
+            red_manager.center.transform.localRotation = red_manager.startPos.transform.localRotation;
+
+            if (red_target == null)
                 red_target = Instantiate(wallMarker, center, Quaternion.identity);
 
             if (trackedArea == null)
@@ -140,9 +146,6 @@ public class GameManager : MonoBehaviour
 
         pathTrail.BeginTrailDrawing();
 
-        /* if(XROrigin == null)
-             XROrigin = Instantiate(dirMarker, red_manager.XRTransform.position + new Vector3(0, 0.1f, 0), red_manager.XRTransform.rotation);
-         text1.SetText("XROrigin: " + XROrigin.transform.position.ToString());*/
     }
 
     public static bool LineIntersection(out Vector3 intersection, Vector3 linePoint1,
