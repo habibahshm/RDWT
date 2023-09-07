@@ -108,6 +108,8 @@ public class GameManager : MonoBehaviour
         Vector3[] boundaryPoints = OVRManager.boundary.GetGeometry(OVRBoundary.BoundaryType.PlayArea);
         Vector3 boundrydim = OVRManager.boundary.GetDimensions(OVRBoundary.BoundaryType.PlayArea);
 
+        text1.SetText("dim: " + boundrydim);
+
         Vector3 p1 = boundaryPoints[0];
         Vector3 p2 = boundaryPoints[1];
         Vector3 p3 = boundaryPoints[2];
@@ -129,12 +131,17 @@ public class GameManager : MonoBehaviour
 
             if (red_target == null)
                 red_target = Instantiate(wallMarker, center, Quaternion.identity);
+            else
+                red_target.transform.position = center;
 
             if (trackedArea == null)
             {
                 trackedArea = Instantiate(realPlanePrefab, center + new Vector3(0, 0.05f, 0), Quaternion.identity);
                 trackedArea.transform.localScale = new Vector3(boundrydim.x / 10, 1, boundrydim.z / 10);
             }
+            else
+                trackedArea.transform.position = center + new Vector3(0, 0.05f, 0);
+            trackedArea.transform.localRotation = red_manager.center.transform.rotation;
         }
 
         pathTrail.ClearTrail(PathTrail.REAL_TRAIL_NAME);
