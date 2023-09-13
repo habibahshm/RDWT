@@ -83,6 +83,7 @@ public class RDManager : MonoBehaviour
     private float lastRotationApplied = 0f;
 
     PathTrail pathTrail;
+    GameManager gameManager;
 
     float sumOfInjectedRotationFromCurvatureGain;
     float sumOfRealDistanceTravelled;
@@ -92,7 +93,8 @@ public class RDManager : MonoBehaviour
     
     private void Start()
     {
-        pathTrail = GameObject.Find("Redirection Manager").GetComponent<PathTrail>();
+        pathTrail = gameObject.GetComponent<PathTrail>();
+        gameManager = GameObject.Find("Game Manager").GetComponent<GameManager>();
         sumOfInjectedRotationFromCurvatureGain = 0;
         sumOfRealDistanceTravelled = 0;
         sumOfInjectedRotationFromRotationGain = 0;
@@ -214,6 +216,7 @@ public class RDManager : MonoBehaviour
         XRTransform.RotateAround(Utilities.FlattenedPos3D(headTransform.position), Vector3.up, finalRotation);
         center.transform.RotateAround(Utilities.FlattenedPos3D(headTransform.position), Vector3.up, finalRotation);
         pathTrail.realTrail.RotateAround(Utilities.FlattenedPos3D(headTransform.position), Vector3.up, finalRotation);
+        gameManager.trackedArea.transform.RotateAround(Utilities.FlattenedPos3D(headTransform.position), Vector3.up, finalRotation);
     }
 
     public void S2C_PickRedirectionTarget()

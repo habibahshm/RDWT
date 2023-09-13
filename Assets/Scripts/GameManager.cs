@@ -1,3 +1,4 @@
+using Redirection;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -6,6 +7,7 @@ using Unity.XR.Oculus;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.XR;
+using static UnityEngine.GraphicsBuffer;
 
 public class GameManager : MonoBehaviour
 {
@@ -15,9 +17,11 @@ public class GameManager : MonoBehaviour
     bool configured;
     GameObject red_target;
     PathTrail pathTrail;
-    GameObject trackedArea;
+    
 
     [HideInInspector] public bool debug = false;
+    [HideInInspector] public GameObject trackedArea;
+
     bool prev_state_touch = false;
     bool paused = false;
     bool prev_state_pause = false;
@@ -28,6 +32,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] TextMeshProUGUI text1;
     [SerializeField] TextMeshProUGUI text2;
     [SerializeField] TextMeshProUGUI text3;
+
+    [SerializeField] GameObject planeDir;
+    [SerializeField] GameObject XRForward;
+
 
     void Start()
     {
@@ -46,11 +54,11 @@ public class GameManager : MonoBehaviour
     void Update()
     {
         
-        if (OVRInput.GetDown(OVRInput.Button.One, OVRInput.Controller.RTouch))
+       /* if (OVRInput.GetDown(OVRInput.Button.One, OVRInput.Controller.RTouch))
         {
             ResetPos();
             
-        }
+        }*/
 
     
         bool button_pressed = OVRInput.GetDown(OVRInput.Button.Two, OVRInput.Controller.RTouch);
@@ -92,8 +100,11 @@ public class GameManager : MonoBehaviour
         {
             red_target.transform.position = red_manager.redirection_target;
         }
-        trackedArea.transform.position = red_manager.center.transform.position + new Vector3(0, 0.05f, 0);
-        trackedArea.transform.localRotation = red_manager.center.transform.rotation;
+        //trackedArea.transform.position = red_manager.center.transform.position + new Vector3(0, 0.05f, 0);
+       // trackedArea.transform.localRotation = red_manager.center.transform.localRotation;
+
+       /* text1.SetText("center rot: " + red_manager.center.transform.localRotation.eulerAngles.ToString());
+        text2.SetText("area rot: " + trackedArea.transform.localRotation.eulerAngles.ToString());*/
        
     }
 
@@ -115,6 +126,10 @@ public class GameManager : MonoBehaviour
         Vector3 p3 = boundaryPoints[2];
         Vector3 p4 = boundaryPoints[3];
 
+        /*Instantiate(wallMarker, p1, Quaternion.identity);
+        Instantiate(wallMarker, p2, Quaternion.identity);*/
+        
+
         Vector3 p1Diff = p3 - p1;
         Vector3 p2Diff = p4 - p2;
         Vector3 center; // Center of the tracked physical area
@@ -134,15 +149,48 @@ public class GameManager : MonoBehaviour
             else
                 red_target.transform.position = center;
 
+            Vector3 forwardDir = (p1 - p4);
+            float angle = Vector3.Angle(Vector3.forward, Utilities.FlattenedDir3D(forwardDir));
+            if (forwardDir.x < 0.0f)
+            {
+                angle = -angle;
+                angle +=  360;
+            }
+
+
+
+            /*  forwardDir = Quaternion.Euler(0, red_manager.XRTransform.rotation.eulerAngles.y, 0) * forwardDir;
+              forwardDir += red_manager.XRTransform.position;
+
+
+              LineRenderer lineRenderer = planeDir.GetComponent<LineRenderer>();
+              lineRenderer.SetPosition(0, red_manager.XRTransform.position);
+              lineRenderer.SetPosition(1, forwardDir);
+
+              LineRenderer lineRenderer2 = XRForward.GetComponent<LineRenderer>();
+              lineRenderer2.SetPosition(0, red_manager.XRTransform.position);
+              lineRenderer2.SetPosition(1, Utilities.FlattenedPos3D(red_manager.XRTransform.TransformPoint(Vector3.forward)));*/
+
+            //float angle = Vector3.Angle(red_manager.XRTransform.forward, forwardDir);
+            //angle = p1.x > 0 ? -angle : angle;
+            /* float angle = Vector3.Angle(red_manager.XRTransform.forward, forwardDir);
+             angle = forwardDir.x > 0.0 ? angle : -angle;*/
+
             if (trackedArea == null)
             {
                 trackedArea = Instantiate(realPlanePrefab, center + new Vector3(0, 0.05f, 0), Quaternion.identity);
                 trackedArea.transform.localScale = new Vector3(boundrydim.x / 10, 1, boundrydim.z / 10);
+               
+               trackedArea.transform.Rotate(0, angle, 0);
+                text2.SetText("angle: " + angle);
+                text3.SetText(trackedArea.transform.rotation.eulerAngles.ToString());
+                
             }
-            else
-                trackedArea.transform.position = center + new Vector3(0, 0.05f, 0);
-            trackedArea.transform.localRotation = red_manager.center.transform.rotation;
+
+           
         }
+
+        Instantiate(dirMarker, center, trackedArea.transform.localRotation);
 
         pathTrail.ClearTrail(PathTrail.REAL_TRAIL_NAME);
         pathTrail.ClearTrail(PathTrail.VIRTUAL_TRAIL_NAME);
