@@ -8,12 +8,12 @@ using UnityEngine;
 public class RDManager : MonoBehaviour
 {
     [Tooltip("Maximum rotation gain applied")]
-    [Range(1F, 2F)]
-    public float MAX_ROT_GAIN = 1.3F;
+    [Range(0, 5)]
+    public float MAX_ROT_GAIN = 0.49F;
 
     [Tooltip("Minimum rotation gain applied")]
-    [Range(0.1F, 1F)]
-    public float MIN_ROT_GAIN = 0.85F;
+    [Range(-0.99F, 0)]
+    public float MIN_ROT_GAIN = -0.2F;
 
     [Tooltip("Radius applied by curvature gain")]
     [Range(1, 23)]
@@ -56,6 +56,7 @@ public class RDManager : MonoBehaviour
 
     [HideInInspector]
     public Vector3 deltaPos;
+
     [HideInInspector]
     public float deltaDir;
 
@@ -212,6 +213,7 @@ public class RDManager : MonoBehaviour
         }
 
         //text3.SetText("Injected rot so far: " + sumOfInjectedRotationFromRotationGain);
+        
 
         XRTransform.RotateAround(Utilities.FlattenedPos3D(headTransform.position), Vector3.up, finalRotation);
         center.transform.RotateAround(Utilities.FlattenedPos3D(headTransform.position), Vector3.up, finalRotation);

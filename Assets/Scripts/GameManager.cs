@@ -33,8 +33,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] TextMeshProUGUI text2;
     [SerializeField] TextMeshProUGUI text3;
 
-    [SerializeField] GameObject planeDir;
-    [SerializeField] GameObject XRForward;
+  /*  [SerializeField] GameObject planeDir;
+    [SerializeField] GameObject XRForward;*/
 
 
     void Start()
@@ -81,7 +81,7 @@ public class GameManager : MonoBehaviour
             {
                 debug = !debug;
                 UI.SetActive(debug);
-                red_target.SetActive(debug);   
+                //red_target.SetActive(debug);   
             }
             prev_state_touch = secondary_t;
         }
@@ -138,6 +138,7 @@ public class GameManager : MonoBehaviour
             // if OVRRig/XR Origin is not aligned with world origin, then must shift and rotate by the diffrence.
             center = Quaternion.Euler(0, red_manager.XRTransform.rotation.eulerAngles.y, 0) * center;
             center += red_manager.XRTransform.position; 
+            center = Utilities.FlattenedPos3D(center);
 
             if(red_manager.center == null)
                 red_manager.center = new GameObject();
@@ -149,6 +150,8 @@ public class GameManager : MonoBehaviour
             else
                 red_target.transform.position = center;
 
+           // red_target.transform.position += new Vector3(0, 0.3f, 0);
+
             Vector3 forwardDir = (p1 - p4);
             float angle = Vector3.Angle(Vector3.forward, Utilities.FlattenedDir3D(forwardDir));
             if (forwardDir.x < 0.0f)
@@ -157,7 +160,7 @@ public class GameManager : MonoBehaviour
                 angle +=  360;
             }
 
-
+            text2.SetText(red_target.transform.position.ToString());
 
             /*  forwardDir = Quaternion.Euler(0, red_manager.XRTransform.rotation.eulerAngles.y, 0) * forwardDir;
               forwardDir += red_manager.XRTransform.position;
@@ -182,15 +185,14 @@ public class GameManager : MonoBehaviour
                 trackedArea.transform.localScale = new Vector3(boundrydim.x / 10, 1, boundrydim.z / 10);
                
                trackedArea.transform.Rotate(0, angle, 0);
-                text2.SetText("angle: " + angle);
-                text3.SetText(trackedArea.transform.rotation.eulerAngles.ToString());
+              
                 
             }
 
            
         }
 
-        Instantiate(dirMarker, center, trackedArea.transform.localRotation);
+        //Instantiate(dirMarker, center, trackedArea.transform.localRotation);
 
         pathTrail.ClearTrail(PathTrail.REAL_TRAIL_NAME);
         pathTrail.ClearTrail(PathTrail.VIRTUAL_TRAIL_NAME);
